@@ -534,7 +534,7 @@ rpc_backend = cinder.openstack.common.rpc.impl_kombu
    
    apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central python-ceilometerclient
    
-* The Metering Service uses a database to store information. Specify the location of the database in the configuration file. The examples in this guide use a MongoDB database on the controller node.
+* The Metering Service uses a database to store information. Specify the location of the database in the configuration file. The examples in this guide use a MongoDB database on the controller node. ::
 
    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
    
