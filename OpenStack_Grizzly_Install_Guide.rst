@@ -40,9 +40,9 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 ====================
 
 :节点角色: NICs
-:控制节点: eth0 (10.10.10.51), eth1 (192.168.100.51)
-:计算节点1: eth0 (10.10.10.52), eth1 (10.20.20.52), eth2 (192.168.100.52)
-:计算节点2: eth0 (10.10.10.53), eth1 (10.20.20.53)
+:控制节点: eth2 (10.10.10.51), eth5 (10.227.56.186)
+:计算节点1: eth2 (10.10.10.52), eth5 (10.227.56.214)
+:计算节点2: eth2 (10.10.10.53), eth3 (10.227.56.181)
 
 **注意1:** 你总是可以使用dpkg -s <packagename>确认你使用的是grizzly软件包(版本: 2013.1)
 
@@ -77,22 +77,22 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 * 如下编辑网卡配置文件/etc/network/interfaces:: 
 
    #Not internet connected(used for OpenStack management)
-   auto eth0
+   auto eth2
    iface eth0 inet static
    address 10.10.10.51
    netmask 255.255.255.0
 
    #For Exposing OpenStack API over the internet
-   auto eth1
-   iface eth1 inet static
-   address 192.168.100.51
+   auto eth5
+   iface eth5 inet static
+   address 10.227.56.186
    netmask 255.255.255.0
-   gateway 192.168.100.1
-   dns-nameservers 8.8.8.8
+   gateway 10.227.56.1
+   dns-nameservers 128.227.30.254
 
 * 重启网络服务::
 
-   service networking restart
+   /etc/init.d/networking restart
 
 * 开启路由转发::
 
@@ -182,16 +182,16 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 创建一个简单的凭据文件，这样稍后就不会因为输入过多的环境变量而感到厌烦::
 
-   vi creds-admin
+   vim /etc/profile
 
    #Paste the following:
    export OS_TENANT_NAME=admin
    export OS_USERNAME=admin
    export OS_PASSWORD=admin_pass
-   export OS_AUTH_URL="http://192.168.100.51:5000/v2.0/"
+   export OS_AUTH_URL="http://10.227.56.186:5000/v2.0/"
 
    # Load it:
-   source creds-admin
+   source /etc/profile
 
 * 通过命令行列出Keystone中添加的用户::
 
@@ -229,18 +229,37 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 按下面更新/etc/glance/glance-api.conf::
 
+   bind_host = 0.0.0.0
+   
    sql_connection = mysql://glanceUser:glancePass@10.10.10.51/glance
 
 * 和::
+
+   [keystone_authtoken]
+   auth_host = 10.10.10.51
+   auth_port = 35357
+   auth_protocol = http
+   admin_tenant_name = service
+   admin_user = glance
+   admin_password = service_pass
 
    [paste_deploy]
    flavor = keystone
    
 * 按下面更新/etc/glance/glance-registry.conf::
 
+   bind_host = 0.0.0.0
    sql_connection = mysql://glanceUser:glancePass@10.10.10.51/glance
 
 * 和::
+
+[keystone_authtoken]
+auth_host = 10.10.10.51
+auth_port = 35357
+auth_protocol = http
+admin_tenant_name = service
+admin_user = glance
+admin_password = service_pass
 
    [paste_deploy]
    flavor = keystone
@@ -279,17 +298,6 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    apt-get install -y quantum-server
 
-* 编辑/etc/quantum/api-paste.ini ::
-
-   [filter:authtoken]
-   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
-   auth_host = 10.10.10.51
-   auth_port = 35357
-   auth_protocol = http
-   admin_tenant_name = service
-   admin_user = quantum
-   admin_password = service_pass
-
 * 编辑OVS配置文件/etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini:: 
 
    #Under the database section
@@ -305,6 +313,17 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    #Firewall driver for realizing quantum security group function
    [SECURITYGROUP]
    firewall_driver = quantum.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+
+* 编辑/etc/quantum/api-paste.ini ::
+
+   [filter:authtoken]
+   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
+   auth_host = 10.10.10.51
+   auth_port = 35357
+   auth_protocol = http
+   admin_tenant_name = service
+   admin_user = quantum
+   admin_password = service_pass
 
 * 编辑/etc/quantum/quantum.conf::
 
@@ -366,7 +385,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    # Vnc configuration
    novnc_enabled=true
-   novncproxy_base_url=http://192.168.100.51:6080/vnc_auto.html
+   novncproxy_base_url=http://10.227.56.186:6080/vnc_auto.html
    novncproxy_port=6080
    vncserver_proxyclient_address=10.10.10.51
    vncserver_listen=0.0.0.0
@@ -431,7 +450,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    [filter:authtoken]
    paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
    service_protocol = http
-   service_host = 192.168.100.51
+   service_host = 10.227.56.186
    service_port = 5000
    auth_host = 10.10.10.51
    auth_port = 35357
@@ -439,19 +458,24 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    admin_tenant_name = service
    admin_user = cinder
    admin_password = service_pass
+   signing_dir = /var/lib/cinder
 
 * 编辑/etc/cinder/cinder.conf::
 
-   [DEFAULT]
-   rootwrap_config=/etc/cinder/rootwrap.conf
-   sql_connection = mysql://cinderUser:cinderPass@10.10.10.51/cinder
-   api_paste_config = /etc/cinder/api-paste.ini
-   iscsi_helper=ietadm
-   volume_name_template = volume-%s
-   volume_group = cinder-volumes
-   verbose = True
-   auth_strategy = keystone
-   #osapi_volume_listen_port=5900
+[DEFAULT]
+rootwrap_config = /etc/cinder/rootwrap.conf
+sql_connection = mysql://cinderUser:cinderPass@10.10.10.51/cinder
+api_paste_confg = /etc/cinder/api-paste.ini
+iscsi_helper = ietadm
+volume_name_template = volume-%s
+volume_group = cinder-volumes
+verbose = True
+auth_strategy = keystone
+iscsi_ip_address=10.10.10.51
+state_path = /var/lib/cinder
+volumes_dir = /var/lib/cinder/volumes
+rpc_backend = cinder.openstack.common.rpc.impl_kombu
+
 
 * 接下来同步数据库::
 
@@ -459,8 +483,8 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 最后别忘了创建一个卷组命名为cinder-volumes::
 
-   dd if=/dev/zero of=cinder-volumes bs=1 count=0 seek=2G
-   losetup /dev/loop2 cinder-volumes
+   dd if=/dev/zero of=/opt/cinder-volumes bs=1 count=0 seek=5G
+   losetup /dev/loop2 /opt/cinder-volumes
    fdisk /dev/loop2
    #Type in the followings:
    n
@@ -478,6 +502,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    vgcreate cinder-volumes /dev/loop2
 
 **注意:** 重启后卷组不会自动挂载 (点击`这个 <https://github.com/mseknibilel/OpenStack-Folsom-Install-guide/blob/master/Tricks%26Ideas/load_volume_group_after_system_reboot.rst>`_ 设置在重启后自动挂载) 
+   echo 'losetup /dev/loop2 /opt/cinder-volumes' >> /etc/rc.local
 
 * 重启cinder服务::
 
@@ -502,6 +527,33 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    service apache2 restart; service memcached restart
 
+2.12. 安装Ceilometer
+---------------------
+
+* Install the Metering Service on the controller node::
+   
+   apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central python-ceilometerclient
+   
+* The Metering Service uses a database to store information. Specify the location of the database in the configuration file. The examples in this guide use a MongoDB database on the controller node.
+
+   apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+   
+   echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
+   
+   apt-get update
+   
+   apt-get install mongodb-10gen
+   
+* Create the database and a ceilometer user for it::
+   
+   mongo
+   
+   use ceilometer
+   
+   db.addUser( { user: "ceilometer", pwd: "ceilometer", roles: [ "readWrite", "dbAdmin" ]
+               } )
+               
+   
 3. 所有计算和网络节点
 ================
 
@@ -546,41 +598,29 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 * 计算节点1网卡如下设置::
 
    # OpenStack management
-   auto eth0
-   iface eth0 inet static
+   auto eth2
+   iface eth2 inet static
    address 10.10.10.52
    netmask 255.255.255.0
 
-   # VM Configuration
-   auto eth1
-   iface eth1 inet static
-   address 10.20.20.52
-   netmask 255.255.255.0
-
    # VM internet Access
-   auto eth2
-   iface eth2 inet static
-   address 192.168.100.52
+   auto eth5
+   iface eth5 inet static
+   address 10.227.56.214
    netmask 255.255.255.0
 
 * 计算节点2网卡如下设置::
 
    # OpenStack management
-   auto eth0
-   iface eth0 inet static
+   auto eth2
+   iface eth2 inet static
    address 10.10.10.53
    netmask 255.255.255.0
 
-   # VM Configuration
-   auto eth1
-   iface eth1 inet static
-   address 10.20.20.53
-   netmask 255.255.255.0
-
    # VM internet Access
-   auto eth2
-   iface eth2 inet static
-   address 192.168.100.53
+   auto eth3
+   iface eth3 inet static
+   address 10.227.56.181
    netmask 255.255.255.0
 
 * 开启路由转发::
@@ -633,10 +673,9 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    文档参考：http://blog.scottlowe.org/2012/08/17/installing-kvm-and-open-vswitch-on-ubuntu/
 
-* 添加网桥 br-ex 并把网卡 eth1 加入 br-ex::
+* 添加网桥 br-ex :
 
-   ovs-vsctl  add-br br-ex
-   ovs-vsctl add-port br-ex eth2
+   ovs-vsctl add-br br-ex
 
 * 如下编辑/etc/network/interfaces::
 
@@ -649,21 +688,16 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    # Not internet connected(used for OpenStack management)
    # The primary network interface
-   auto eth0
-   iface eth0 inet static
+   auto eth2
+   iface eth2 inet static
    # This is an autoconfigured IPv6 interface
    # iface eth0 inet6 auto
    address 10.10.10.52    # 计算节点2改为10.10.10.53
    netmask 255.255.255.0
 
-   auto eth1
-   iface eth1 inet static
-   address 10.20.20.52    # 计算节点2改为10.10.10.53
-   netmask 255.255.255.0
-
    #For Exposing OpenStack API over the internet
-   auto eth2
-   iface eth2 inet manual
+   auto eth5
+   iface eth5 inet manual
    up ifconfig $IFACE 0.0.0.0 up
    up ip link set $IFACE promisc on
    down ip link set $IFACE promisc off
@@ -671,12 +705,16 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    auto br-ex
    iface br-ex inet static
-   address 192.168.100.52    # 计算节点2改为10.10.10.53
+   address 10.227.56.214    # 计算节点2改为10.10.10.53
    netmask 255.255.255.0
-   gateway 192.168.100.1
-   dns-nameservers 8.8.8.8
+   gateway 10.227.56.1
+   dns-nameservers 128.227.30.254
 
-* 重启网络服务::
+* 把网卡 eth5 加入 br-ex::
+
+   ovs-vsctl add-port br-ex eth5
+   
+* 此时断网，本地登录重启网络服务::
 
    /etc/init.d/networking restart
 
@@ -731,11 +769,11 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    #Under the OVS section
    [OVS]
    tenant_network_type = gre
-   enable_tunneling = True
    tunnel_id_ranges = 1:1000
    integration_bridge = br-int
    tunnel_bridge = br-tun
    local_ip = 10.10.10.52    # 计算节点2改为10.10.10.53
+   enable_tunneling = True
 
    #Firewall driver for realizing quantum security group function
    [SECURITYGROUP]
@@ -762,6 +800,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    # 确保RabbitMQ IP指向了控制节点
    rabbit_host = 10.10.10.51
+   rabbit_port = 5672
 
    [keystone_authtoken]
    auth_host = 10.10.10.51
@@ -810,7 +849,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    # specific host routes to the DHCP request.  The metadata service will only
    # be activated when the subnet gateway_ip is None.  The guest instance must
    # be configured to request host routes via DHCP (Option 121).
-   enable_isolated_metadata = False
+   enable_isolated_metadata = True
 
    # Allows for serving metadata requests coming from a dedicated metadata
    # access network whose cidr is 169.254.169.254/16 (or larger prefix), and
@@ -818,7 +857,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    # request. In this case DHCP Option 121 will not be injected in VMs, as
    # they will be able to reach 169.254.169.254 through a router.
    # This option requires enable_isolated_metadata = True
-   enable_metadata_network = False
+   enable_metadata_network = True
 
 * 重启quantum所有服务::
 
@@ -856,12 +895,16 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    listen_tcp = 1
    auth_tcp = "none"
 
-* E编辑libvirtd_opts变量在/etc/init/libvirt-bin.conf配置文件中::
+* 编辑libvirtd_opts变量在/etc/init/libvirt-bin.conf配置文件中::
 
+   sed -i 's/libvirtd_opts="-d"/libvirtd_opts="-d -l"/g' /etc/init/libvirt-bin.conf
+   
    env libvirtd_opts="-d -l"
 
 * 编辑/etc/default/libvirt-bin文件 ::
 
+   sed -i 's/libvirtd_opts="-d"/libvirtd_opts="-d -l"/g' /etc/default/libvirt-bin
+   
    libvirtd_opts="-d -l"
 
 * 重启libvirt服务使配置生效::
@@ -892,7 +935,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    # Workaround for https://bugs.launchpad.net/nova/+bug/1154809
    auth_version = v2.0
 
-* 如下修改/etc/nova/nova.conf::
+* 如下修改/etc/nova/nova.conf,也可从计算节点scp nova.conf::
 
    [DEFAULT]
    logdir=/var/log/nova
@@ -916,7 +959,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    # Vnc configuration
    novnc_enabled=true
-   novncproxy_base_url=http://192.168.100.51:6080/vnc_auto.html
+   novncproxy_base_url=http://10.227.56.186:6080/vnc_auto.html
    novncproxy_port=6080
    vncserver_proxyclient_address=10.10.10.52    # 计算节点二改为10.10.10.53
    vncserver_listen=0.0.0.0
@@ -979,7 +1022,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    export OS_TENANT_NAME=admin
    export OS_USERNAME=admin
    export OS_PASSWORD=admin_pass
-   export OS_AUTH_URL="http://192.168.100.51:5000/v2.0/"
+   export OS_AUTH_URL="http://10.227.56.186:5000/v2.0/"
 
 * 使环境变量生效::
 
@@ -1379,7 +1422,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    export OS_TENANT_NAME=leju.com
    export OS_USERNAME=dongliang
    export OS_PASSWORD=123456
-   export OS_AUTH_URL="http://192.168.100.51:5000/v2.0/"
+   export OS_AUTH_URL="http://10.227.56.186:5000/v2.0/"
 
 * 用dongliang用户登陆web界面，创建虚拟主机vm.leju.com
 
