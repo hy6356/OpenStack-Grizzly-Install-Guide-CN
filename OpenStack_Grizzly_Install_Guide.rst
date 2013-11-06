@@ -537,22 +537,101 @@ rpc_backend = cinder.openstack.common.rpc.impl_kombu
 * The Metering Service uses a database to store information. Specify the location of the database in the configuration file. The examples in this guide use a MongoDB database on the controller node. ::
 
    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-   
    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
-   
    apt-get update
-   
    apt-get install mongodb-10gen
    
 * Create the database and a ceilometer user for it::
    
    mongo
-   
    use ceilometer
-   
    db.addUser( { user: "ceilometer", pwd: "ceilometer", roles: [ "readWrite", "dbAdmin" ]
                } )
                
+* Create a user called ceilometer so that the Metering Service can use to authenticate with the Identity Service. Use the service tenant and give the user the admin role. ::
+  
+   keystone user-create --name=ceilometer --pass=ceilometer --email=ceilometer@example.com
+   keystone user-role-add --user=ceilometer --tenant=service --role=admin
+   
+* Register the Metering Service with the Identity Service so that other OpenStack services can locate it. Register the service and specify the endpoint using the keystone command. ::
+   
+   keystone service-create --name=ceilometer --type=metering --description="Ceilometer Metering Service"
+  
+* Note the id property for the service that was returned in the previous step. Use it when you create the endpoint.::
+   
+   keystone endpoint-create --service-id=the_service_id_above --publicurl=http://10.227.56.186:8777 --internalurl=http://10.10.10.51:8777 --adminurl=http://10.10.10.51:8777
+  
+* You must define an secret key that is used as a shared secret between the Metering Service nodes. Use openssl to generate a random token and store it in the configuration file. Edit /etc/ceilometer/ceilometer.conf and change the [DEFAULT] section, replacing ADMIN_TOKEN with the results of the command.::
+   
+   openssl rand -hex 10
+   
+* Modify the  /etc/ceilometer/ceilometer.conf ::
+   
+   [DEFAULT]
+   debug=true
+   verbose=true
+   log_dir=/var/log/ceilometer/
+   metering_secret=118b0323ba8xxxxxxxxxxxxxxxxx
+   auth_strategy=keystone
+   notification_topics=notifications
+   rpc_backend=ceilometer.openstack.common.rpc.impl_kombu
+   rabbit_host=10.10.10.51
+   database_connection = mongodb://ceilometer:ceilometer@10.10.10.51:27017/ceilometer
+   [keystone_authtoken]
+   auth_host = 10.10.10.51
+   auth_port = 35357
+   auth_protocol = http
+   admin_tenant_name = service
+   admin_user = ceilometer
+   admin_password = ceilometer
+
+   os_username=admin
+   os_password=admin_pass
+   os_tenant_name=service
+   os_auth_url=http://10.10.10.51:5000/v2.0
+
+* Glance配置,修改glance-api.conf配置::
+
+   notifier_strategy = rabbit
+   
+* 修改cinder.conf配置::
+
+   notification_driver=cinder.openstack.common.notifier.rabbit_notifier
+   control_exchange=cinder
+   
+* 修改nova.conf配置 ::
+
+   instance_usage_audit=True
+   instance_usage_audit_period=hour
+   notify_on_state_change=vm_and_task_state
+   notification_driver=nova.openstack.common.notifier.rpc_notifier
+   notification_driver=ceilometer.compute.nova_notifier
+
+* Ceilometer有bug，修改vim /usr/lib/python2.7/dist-packages/ceilometer/service.py文件中有关os的部分，这部分功能读不出数,需要自己修改其中的os设置::
+
+   CLI_OPTIONS = [
+    cfg.StrOpt('os_username',
+               default=os.environ.get('OS_USERNAME', 'admin'),
+               help='Username to use for openstack service access'),
+    cfg.StrOpt('os_password',
+               default=os.environ.get('OS_PASSWORD', 'admin_pass'),
+               help='Password to use for openstack service access'),
+    cfg.StrOpt('os_tenant_id',
+               default=os.environ.get('OS_TENANT_ID', ''),
+               help='Tenant ID to use for openstack service access'),
+    cfg.StrOpt('os_tenant_name',
+               default=os.environ.get('OS_TENANT_NAME', 'admin'),
+               help='Tenant name to use for openstack service access'),
+    cfg.StrOpt('os_auth_url',
+               default=os.environ.get('OS_AUTH_URL',
+                                      'http://10.10.10.51:5000/v2.0'),
+               help='Auth URL to use for openstack service access'),
+   ]
+
+* Restart the service with its new settings.::
+   
+   service ceilometer-agent-central restart; service ceilometer-api restart; service ceilometer-collector restart
+
    
 3. 所有计算和网络节点
 ================
@@ -1004,6 +1083,10 @@ rpc_backend = cinder.openstack.common.rpc.impl_kombu
 * 检查所有nova服务是否启动正常::
 
    nova-manage service list
+
+3.7 Ceilometer配置
+
+* 计算节点容易配置
 
 4. OpenStack使用
 ================
