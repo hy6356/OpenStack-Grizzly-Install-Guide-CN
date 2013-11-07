@@ -253,13 +253,13 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 和::
 
-[keystone_authtoken]
-auth_host = 10.10.10.51
-auth_port = 35357
-auth_protocol = http
-admin_tenant_name = service
-admin_user = glance
-admin_password = service_pass
+   [keystone_authtoken]
+   auth_host = 10.10.10.51
+   auth_port = 35357
+   auth_protocol = http
+   admin_tenant_name = service
+   admin_user = glance
+   admin_password = service_pass
 
    [paste_deploy]
    flavor = keystone
@@ -1085,8 +1085,12 @@ rpc_backend = cinder.openstack.common.rpc.impl_kombu
    nova-manage service list
 
 3.7 Ceilometer配置
+-------------------
 
-* 计算节点容易配置
+* 计算节点容易配置::
+
+   apt-get install ceilometer-agent-compute python-ceilometer ceilometer-common
+   service ceilometer-agent-compute restart
 
 4. OpenStack使用
 ================
