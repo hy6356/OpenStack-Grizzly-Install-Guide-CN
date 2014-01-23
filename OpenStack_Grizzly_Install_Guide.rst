@@ -52,26 +52,11 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 
 2. 控制节点
 ===============
-
-2.1. 准备Ubuntu
------------------
-
 * 安装好Ubuntu 12.04 Server 64bits后, 进入sudo模式直到完成本指南::
 
    sudo su -
 
-* 添加Grizzly仓库::
-
-   apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
-   echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
-
-* 升级系统::
-
-   apt-get update
-   apt-get upgrade
-   apt-get dist-upgrade
-
-2.2.设置网络
+2.1.设置网络
 ------------
 
 * 如下编辑网卡配置文件/etc/network/interfaces:: 
@@ -99,7 +84,7 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
    sysctl -p
 
-2.3. 安装MySQL
+2.2. 安装MySQL
 ------------
 
 * 安装MySQL并为root用户设置密码::
@@ -115,6 +100,23 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    
    mysql_install_db
    mysql_secure_installation
+
+2.3. 添加Havana仓库
+-----------------
+
+* 添加Havana仓库::
+
+   apt-get install -y ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
+   add-apt-repository cloud-archive:havana
+
+* 升级系统::
+
+   apt-get update
+   apt-get upgrade
+   apt-get dist-upgrade
+
+* Reboot::
+   reboot
    
 2.4. 安装RabbitMQ和NTP
 ------------
@@ -136,7 +138,8 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    
    #Keystone
    CREATE DATABASE keystone;
-   GRANT ALL ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
+   GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'localhost' IDENTIFIED BY 'keystonePass';
+   GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
    
    #Glance
    CREATE DATABASE glance;
@@ -712,6 +715,9 @@ rpc_backend = cinder.openstack.common.rpc.impl_kombu
    sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
    sysctl -p
 
+* On all nodes other than the controller node, install the MySQL client and the MySQL Python library on any system that does not host a MySQL database: ::
+   
+   apt-get install -y python-mysqldb mysql-client
 
 3.3. OpenVSwitch
 ------------
