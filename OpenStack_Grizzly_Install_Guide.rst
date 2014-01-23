@@ -1,10 +1,10 @@
 ==========================================================
-  OpenStack Grizzly 安装指南
+  OpenStack Havana 安装指南
 ==========================================================
 
-:Version: 1.0
+:Version: 2.0
 :Source: https://github.com/ist0ne/OpenStack-Grizzly-Install-Guide-CN
-:Keywords: 多点OpenStack安装, Grizzly, Quantum, Nova, Keystone, Glance, Horizon, Cinder, OpenVSwitch, KVM, Ubuntu Server 12.04 (64 bits).
+:Keywords: 多点OpenStack安装, Havana, Quantum, Nova, Keystone, Glance, Horizon, Cinder, OpenvSwitch, KVM, Ubuntu Server 12.04 (64 bits).
 
 作者
 ==========
@@ -31,7 +31,7 @@
 0. 简介
 ==============
 
-OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台。
+OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台。
 
 状态: Stable
 
@@ -44,7 +44,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 :计算节点1: eth2 (10.10.10.52), eth5 (10.227.56.214)
 :计算节点2: eth2 (10.10.10.53), eth3 (10.227.56.181)
 
-**注意1:** 你总是可以使用dpkg -s <packagename>确认你使用的是grizzly软件包(版本: 2013.1)
+**注意1:** 你总是可以使用dpkg -s <packagename>确认你使用的是havana软件包(版本: 2013.1)
 
 **注意2:** 这个是当前网络架构
 
@@ -106,11 +106,16 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    apt-get install -y mysql-server python-mysqldb
 
-* 配置mysql监听所有网络接口请求::
+* 配置mysql监听所有网络接口请求, set the bind-address to the internal IP address of the controller::
 
    sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf
    service mysql restart
 
+* You must delete the anonymous users that are created when the database is first started. Otherwise, database connection problems occur when you follow the instructions in this guide. To do this, use the mysql_secure_installation command. Note that if mysql_secure_installation fails you might need to use mysql_install_db first: ::
+   
+   mysql_install_db
+   mysql_secure_installation
+   
 2.4. 安装RabbitMQ和NTP
 ------------
 
