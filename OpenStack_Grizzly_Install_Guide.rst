@@ -143,19 +143,27 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    
    #Glance
    CREATE DATABASE glance;
-   GRANT ALL ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY 'glancePass';
+   GRANT ALL PRIVILEGES ON glance.* TO 'glanceUser'@'localhost' IDENTIFIED BY 'glancePass';
+   GRANT ALL PRIVILEGES ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY 'glancePass';
+   
 
-   #Quantum
-   CREATE DATABASE quantum;
-   GRANT ALL ON quantum.* TO 'quantumUser'@'%' IDENTIFIED BY 'quantumPass';
+   #Neutron
+   CREATE DATABASE neutron;
+   GRANT ALL PRIVILEGES ON neutron.* TO 'neutronUser'@'localhost' IDENTIFIED BY 'neutronPass';
+   GRANT ALL PRIVILEGES ON neutron.* TO 'neutronUser'@'%' IDENTIFIED BY 'neutronPass';
+   
 
    #Nova
    CREATE DATABASE nova;
-   GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY 'novaPass';      
+   GRANT ALL PRIVILEGES ON nova.* TO 'novaUser'@'localhost' IDENTIFIED BY 'novaPass';
+   GRANT ALL PRIVILEGES ON nova.* TO 'novaUser'@'%' IDENTIFIED BY 'novaPass';
+   
 
    #Cinder
    CREATE DATABASE cinder;
-   GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY 'cinderPass';
+   GRANT ALL PRIVILEGES ON cinder.* TO 'cinderUser'@'localhost' IDENTIFIED BY 'cinderPass';
+   GRANT ALL PRIVILEGES ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY 'cinderPass';
+   
 
    quit;
 
