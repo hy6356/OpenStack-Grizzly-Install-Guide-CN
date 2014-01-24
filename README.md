@@ -1,7 +1,7 @@
-OpenStack Grizzly安装指南
+OpenStack Havana安装指南
 ===============================
 
-你想安装OpenStack Grizzly但是不知道如何开始，你可以看看本指南！
+你想安装OpenStack Havana但是不知道如何开始，你可以看看本指南！
 
 他容易、简单且经过了测试。还等什么？试试吧: 
 
