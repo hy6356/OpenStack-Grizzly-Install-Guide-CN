@@ -183,11 +183,11 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    service keystone restart
    keystone-manage db_sync
 
-* 使用git仓库中脚本填充keystone数据库： `脚本文件夹 <https://github.com/ist0ne/OpenStack-Grizzly-Install-Guide/tree/master/KeystoneScripts>`_ ::
+* 使用git仓库中脚本填充keystone数据库： `脚本文件夹 <https://github.com/hy6356/OpenStack-Grizzly-Install-Guide-CN/blob/havana/KeystoneScripts/>`_ ::
 
    #注意在执行脚本前请按你的网卡配置修改HOST_IP和HOST_IP_EXT
 
-   wget https://raw.github.com/ist0ne/OpenStack-Grizzly-Install-Guide-CN/OVS_MutliNode/KeystoneScripts/keystone_basic.sh
+   wget https://github.com/hy6356/OpenStack-Grizzly-Install-Guide-CN/blob/havana/KeystoneScripts/keystone_basic.sh
    wget https://raw.github.com/ist0ne/OpenStack-Grizzly-Install-Guide-CN/OVS_MutliNode/KeystoneScripts/keystone_endpoints_basic.sh
 
    chmod +x keystone_basic.sh
@@ -209,6 +209,10 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    # Load it:
    source /etc/profile
 
+* To verify the Identity Service is installed and configured correctly, first unset the SERVICE_TOKEN and SERVICE_ENDPOINT environment variables. These were only used to bootstrap the administrative user and register the Identity Service.::
+
+   unset SERVICE_TOKEN SERVICE_ENDPOINT
+   
 * 通过命令行列出Keystone中添加的用户::
 
    keystone user-list
