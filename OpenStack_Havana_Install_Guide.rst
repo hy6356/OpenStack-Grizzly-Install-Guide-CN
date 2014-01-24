@@ -9,11 +9,11 @@
 作者
 ==========
 
-`Shi Dongliang <http://stone.so>`_ <istone2008@gmail.com>
+`Yang HU <http://plaza.ufl.edu/huyang.ece/>`_ <hy6356@gmail.com>
 
 本指南fork自
 `Bilel Msekni <https://github.com/mseknibilel/OpenStack-Grizzly-Install-Guide>`_ 
-的git仓库。向第一作者致敬！
+的git仓库。向第一作者及中文版作者Shi Dongliang致敬！
 
 内容列表
 =================
@@ -132,19 +132,6 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 2.5. 创建数据库
 ------------
 
-* 创建数据库::
-
-   mysql -u root -p
-   
-   #Keystone
-   CREATE DATABASE keystone;
-   GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'localhost' IDENTIFIED BY 'keystonePass';
-   GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
-   
-   #Glance
-   CREATE DATABASE glance;
-   GRANT ALL PRIVILEGES ON glance.* TO 'glanceUser'@'localhost' IDENTIFIED BY 'glancePass';
-   GRANT ALL PRIVILEGES ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY 'glancePass';
    
 
    #Neutron
@@ -177,6 +164,15 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 * 在/etc/keystone/keystone.conf中设置连接到新创建的数据库::
 
    connection = mysql://keystoneUser:keystonePass@10.10.10.51/keystone
+
+* 创建数据库::
+
+   mysql -u root -p
+   
+   #Keystone
+   CREATE DATABASE keystone;
+   GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'localhost' IDENTIFIED BY 'keystonePass';
+   GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
 
 * 重启身份认证服务并同步数据库::
 
@@ -220,32 +216,9 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 2.7. 设置Glance
 ------------
 
-* 安装Glance::
+* Install the Image Service on the controller node:::
 
-   apt-get install -y glance
-
-* 按下面更新/etc/glance/glance-api-paste.ini::
-
-   [filter:authtoken]
-   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
-   delay_auth_decision = true
-   auth_host = 10.10.10.51
-   auth_port = 35357
-   auth_protocol = http
-   admin_tenant_name = service
-   admin_user = glance
-   admin_password = service_pass
-
-* 按下面更新/etc/glance/glance-registry-paste.ini::
-
-   [filter:authtoken]
-   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
-   auth_host = 10.10.10.51
-   auth_port = 35357
-   auth_protocol = http
-   admin_tenant_name = service
-   admin_user = glance
-   admin_password = service_pass
+   apt-get install -y glance python-glanceclient
 
 * 按下面更新/etc/glance/glance-api.conf::
 
@@ -284,13 +257,44 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    [paste_deploy]
    flavor = keystone
 
-* 重启glance-api和glance-registry服务::
+* By default, the Ubuntu packages create an SQLite database. Delete the glance.sqlite file created in the /var/lib/glance/ directory so that it does not get used by mistake.
 
-   service glance-api restart; service glance-registry restart
+   rm -rf /var/lib/glance/
 
+* Use the password you created to log in as root and create a glance database user:::
+
+   mysql -u root -p
+   CREATE DATABASE glance;
+   GRANT ALL PRIVILEGES ON glance.* TO 'glanceUser'@'localhost' IDENTIFIED BY 'glancePass';
+   GRANT ALL PRIVILEGES ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY 'glancePass';
+   
 * 同步glance数据库::
 
    glance-manage db_sync
+
+
+* 按下面更新/etc/glance/glance-api-paste.ini::
+
+   [filter:authtoken]
+   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
+   delay_auth_decision = true
+   auth_host = 10.10.10.51
+   admin_tenant_name = service
+   admin_user = glance
+   admin_password = service_pass
+   flavor=keystone
+
+* 按下面更新/etc/glance/glance-registry-paste.ini::
+
+   [filter:authtoken]
+   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
+   auth_host = 10.10.10.51
+   admin_tenant_name = service
+   admin_user = glance
+   admin_password = service_pass
+   flavor=keystone
+
+
 
 * 重启服务使配置生效::
 
