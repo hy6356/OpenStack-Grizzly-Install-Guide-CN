@@ -165,6 +165,10 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 
    connection = mysql://keystoneUser:keystonePass@10.10.10.51/keystone
 
+* By default, the Ubuntu packages create an SQLite database. Delete the keystone.db file created in the /var/lib/keystone/ directory so that it does not get used by mistake.：：
+   
+   rm /var/lib/keystone/keystone.db
+   
 * 创建数据库::
 
    mysql -u root -p
@@ -174,11 +178,18 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'localhost' IDENTIFIED BY 'keystonePass';
    GRANT ALL PRIVILEGES ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
 
-* 重启身份认证服务并同步数据库::
+* 同步数据库::
+
+   keystone-manage db_sync
+   
+* Define an authorization token to use as a shared secret between the Identity Service and other OpenStack services. Use openssl to generate a random token and store it in the configuration file, Edit /etc/keystone/keystone.conf and change the [DEFAULT] section, replacing ADMIN_TOKEN with the results of the command.::
+   
+   openssl rand -hex 10
+
+* 重启身份认证服务::
 
    service keystone restart
-   keystone-manage db_sync
-
+   
 * 使用git仓库中脚本填充keystone数据库： `脚本文件夹 <https://github.com/hy6356/OpenStack-Grizzly-Install-Guide-CN/blob/havana/KeystoneScripts/>`_ ::
 
    #注意在执行脚本前请按你的网卡配置修改HOST_IP和HOST_IP_EXT
