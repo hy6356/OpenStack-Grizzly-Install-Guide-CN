@@ -210,7 +210,7 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
    #Paste the following:
    export OS_TENANT_NAME=admin
    export OS_USERNAME=admin
-   export OS_PASSWORD=admin_pass
+   export OS_PASSWORD=service_pass
    export OS_AUTH_URL="http://10.227.56.186:5000/v2.0/"
 
    # Load it:
@@ -270,7 +270,7 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 
 * By default, the Ubuntu packages create an SQLite database. Delete the glance.sqlite file created in the /var/lib/glance/ directory so that it does not get used by mistake.
 
-   rm -rf /var/lib/glance/
+   rm /var/lib/glance/glance.sqlite
 
 * Use the password you created to log in as root and create a glance database user:::
 
@@ -380,8 +380,71 @@ OpenStack Havana安装指南旨在让你轻松创建自己的OpenStack云平台�
 
 * 安装nova组件::
 
-   apt-get install -y nova-api nova-cert novnc nova-consoleauth nova-scheduler nova-novncproxy nova-doc nova-conductor
+   apt-get install -y nova-novncproxy novnc nova-api \
+nova-ajax-console-proxy nova-cert nova-conductor \
+nova-consoleauth nova-doc nova-scheduler \
+python-novaclient
 
+* Edit the /etc/nova/nova.conf file and add these lines to the [database] and [keystone_authtoken] sections:：：
+
+   [database]
+   # The SQLAlchemy connection string used to connect to the database
+   connection = mysql://novaUser:novaPass@10.10.10.51/nova
+   [keystone_authtoken]
+   auth_host = controller
+   auth_port = 35357
+   auth_protocol = http
+   admin_tenant_name = service
+   admin_user = nova
+   admin_password = service_pass
+   
+* Configure the Compute Service to use the RabbitMQ message broker by setting these configuration keys in the [DEFAULT] configuration group of the /etc/nova/nova.conf file:::
+
+   rpc_backend = nova.rpc.impl_kombu
+   rabbit_host = controller
+   rabbit_password = RABBIT_PASS
+   
+* By default, the Ubuntu packages create an SQLite database. Delete the nova.sqlite file created in the /var/lib/nova/ directory so that it does not get used by mistake.::
+
+* ::
+
+   CREATE DATABASE nova;
+   GRANT ALL PRIVILEGES ON nova.* TO 'novaUser'@'localhost' IDENTIFIED BY 'novaPass';
+   GRANT ALL PRIVILEGES ON nova.* TO 'novaUser'@'%' IDENTIFIED BY 'novaPass';
+
+* Create the Compute service tables:::
+   
+   nova-manage db sync
+   
+* Set the my_ip, vncserver_listen, and vncserver_proxyclient_address configuration options to the internal IP address of the controller node:
+Edit the /etc/nova/nova.conf file and add these lines to the [DEFAULT] section:::
+   
+   ...
+   [DEFAULT]
+   ...
+   my_ip=192.168.0.10
+   vncserver_listen=192.168.0.10
+   vncserver_proxyclient_address=192.168.0.10
+   
+* Configure Compute to use these credentials with the Identity Service running on the controller. Replace NOVA_PASS with your Compute password. Edit the [DEFAULT] section in the /etc/nova/nova.conf file to add this key:::
+   
+   [DEFAULT]
+   ...
+   auth_strategy=keystone
+
+* Add the credentials to the /etc/nova/api-paste.ini file. Add these options to the [filter:authtoken] section:   ::
+   
+   [filter:authtoken]
+   paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
+   auth_host = controller
+   auth_port = 35357
+   auth_protocol = http
+   auth_uri = http://controller:5000/v2.0
+   admin_tenant_name = service
+   admin_user = nova
+   admin_password = service_pass
+   
+   
 * 在/etc/nova/api-paste.ini配置文件中修改认证信息::
 
    [filter:authtoken]
