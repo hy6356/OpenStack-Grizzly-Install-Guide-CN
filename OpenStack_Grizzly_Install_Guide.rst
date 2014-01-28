@@ -132,22 +132,27 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    #Keystone
    CREATE DATABASE keystone;
    GRANT ALL ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
+   GRANT ALL ON keystone.* TO 'keystoneUser'@'localhost' IDENTIFIED BY 'keystonePass';
    
    #Glance
    CREATE DATABASE glance;
    GRANT ALL ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY 'glancePass';
+   GRANT ALL ON glance.* TO 'glanceUser'@'localhost' IDENTIFIED BY 'glancePass';
 
    #Quantum
    CREATE DATABASE quantum;
    GRANT ALL ON quantum.* TO 'quantumUser'@'%' IDENTIFIED BY 'quantumPass';
+   GRANT ALL ON quantum.* TO 'quantumUser'@'localhost' IDENTIFIED BY 'quantumPass';
 
    #Nova
    CREATE DATABASE nova;
-   GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY 'novaPass';      
+   GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY 'novaPass';   
+   GRANT ALL ON nova.* TO 'novaUser'@'localhost' IDENTIFIED BY 'novaPass';   
 
    #Cinder
    CREATE DATABASE cinder;
    GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY 'cinderPass';
+   GRANT ALL ON cinder.* TO 'cinderUser'@'localhost' IDENTIFIED BY 'cinderPass';
 
    quit;
 
