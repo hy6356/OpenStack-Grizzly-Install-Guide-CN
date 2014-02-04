@@ -632,6 +632,11 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
                                       'http://10.10.10.51:5000/v2.0'),
                help='Auth URL to use for openstack service access'),
    ]
+   
+   sed -i 's/os-username/os_username/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
+   sed -i 's/os-password/os_password/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
+   sed -i 's/os-tenant-id/os_tenant_id/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
+   sed -i 's/os-auth-url/os_auth_url/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
 
 * Restart the service with its new settings.::
    
