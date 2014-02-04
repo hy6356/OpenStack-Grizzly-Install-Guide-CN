@@ -1172,9 +1172,9 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    | tenant_id                 | d2d70c131e86453f8296940da08bb574     |
    +---------------------------+--------------------------------------+
 
-* 为admin租户创建子网::
+* 为admin租户创建具有DNS的子网::
 
-   # quantum subnet-create --tenant-id d2d70c131e86453f8296940da08bb574 net_admin 172.16.100.0/24
+   # quantum subnet-create --tenant-id d2d70c131e86453f8296940da08bb574 net_admin 172.16.100.0/24 --dns_nameservers list=true 8.8.8.7 8.8.8.8
 
    Created a new subnet:
    +------------------+----------------------------------------------------+
@@ -1182,7 +1182,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    +------------------+----------------------------------------------------+
    | allocation_pools | {"start": "172.16.100.2", "end": "172.16.100.254"} |
    | cidr             | 172.16.100.0/24                                    |
-   | dns_nameservers  |                                                    |
+   | dns_nameservers  | 8.8.8.8                                            |
    | enable_dhcp      | True                                               |
    | gateway_ip       | 172.16.100.1                                       |
    | host_routes      |                                                    |
@@ -1226,13 +1226,13 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 将router_admin设置为L3代理类型（将router_admin与Compute1的L3代理关联）::
 
-   # quantum quantum l3-agent-router-add 071b8408-74fa-43bc-a3d4-68ab0d42796c router_admin
+   # quantum l3-agent-router-add 071b8408-74fa-43bc-a3d4-68ab0d42796c router_admin
 
    Added router router_admin to L3 agent
 
 * 将net_admin子网与router_admin路由关联::
 
-   # quantum router-interface-add 813eb696-58e3-4721-b6b2-d7d1f946502c 756f203f-8fd3-4074-9a12-1328cfbc41bf
+   # quantum router-interface-add router_admin 756f203f-8fd3-4074-9a12-1328cfbc41bf
 
    Added interface to router 813eb696-58e3-4721-b6b2-d7d1f946502c
 
@@ -1259,17 +1259,17 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 为net_external创建子网，注意设置的gateway必须在给到的网段内::
 
-   # quantum subnet-create net_external --gateway 192.168.100.1 192.168.100.0/24 --enable_dhcp=False
+   # quantum subnet-create net_external --gateway 10.227.56.1 10.227.56.0/24 --enable_dhcp=False --dns_nameservers list=true 8.8.8.8
 
    Created a new subnet:
    +------------------+------------------------------------------------------+
    | Field            | Value                                                |
    +------------------+------------------------------------------------------+
-   | allocation_pools | {"start": "192.168.100.2", "end": "192.168.100.254"} |
-   | cidr             | 192.168.100.0/24                                     |
-   | dns_nameservers  |                                                      |
+   | allocation_pools | {"start": "10.227.56.2", "end": "10.227.56.254"}     |
+   | cidr             | 10.227.56.0/24                                       |
+   | dns_nameservers  | 8.8.8.8                                              |
    | enable_dhcp      | False                                                |
-   | gateway_ip       | 192.168.100.1                                        |
+   | gateway_ip       | 10.227.56.1                                          |
    | host_routes      |                                                      |
    | id               | 53424a33-e685-469e-b529-eccf75504ba1                 |
    | ip_version       | 4                                                    |
