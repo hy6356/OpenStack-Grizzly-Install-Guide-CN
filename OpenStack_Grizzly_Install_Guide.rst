@@ -616,16 +616,16 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    CLI_OPTIONS = [
     cfg.StrOpt('os_username',
-               default=os.environ.get('OS_USERNAME', 'admin'),
+               default=os.environ.get('OS_USERNAME', 'ceilometer'),   # need to notice, here is keystone "admin_user"
                help='Username to use for openstack service access'),
     cfg.StrOpt('os_password',
-               default=os.environ.get('OS_PASSWORD', 'admin_pass'),
+               default=os.environ.get('OS_PASSWORD', 'ceilometer'),  # need to notice, here is keystone "admin_password"
                help='Password to use for openstack service access'),
     cfg.StrOpt('os_tenant_id',
                default=os.environ.get('OS_TENANT_ID', ''),
                help='Tenant ID to use for openstack service access'),
     cfg.StrOpt('os_tenant_name',
-               default=os.environ.get('OS_TENANT_NAME', 'admin'),
+               default=os.environ.get('OS_TENANT_NAME', 'service'),# need to notice, here is keystone "admin_tenant_name"
                help='Tenant name to use for openstack service access'),
     cfg.StrOpt('os_auth_url',
                default=os.environ.get('OS_AUTH_URL',
