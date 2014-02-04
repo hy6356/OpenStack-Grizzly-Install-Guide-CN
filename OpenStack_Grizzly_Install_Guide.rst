@@ -637,7 +637,8 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
    sed -i 's/os-password/os_password/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
    sed -i 's/os-tenant-id/os_tenant_id/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
    sed -i 's/os-auth-url/os_auth_url/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
-
+   sed -i 's/os-tenant-name/os_tenant_name/g' /usr/lib/python2.7/dist-packages/ceilometer/service.py
+   
 * Restart the service with its new settings.::
    
    service ceilometer-agent-central restart; service ceilometer-api restart; service ceilometer-collector restart
