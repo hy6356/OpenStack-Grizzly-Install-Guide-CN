@@ -62,7 +62,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
 * 添加Grizzly仓库::
 
-   apt-get install ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
+   apt-get install -y ubuntu-cloud-keyring python-software-properties software-properties-common python-keyring
    echo deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main >> /etc/apt/sources.list.d/grizzly.list
 
 * 升级系统::
@@ -78,7 +78,7 @@ OpenStack Grizzly安装指南旨在让你轻松创建自己的OpenStack云平台
 
    #Not internet connected(used for OpenStack management)
    auto eth2
-   iface eth0 inet static
+   iface eth2 inet static
    address 10.10.10.51
    netmask 255.255.255.0
 
