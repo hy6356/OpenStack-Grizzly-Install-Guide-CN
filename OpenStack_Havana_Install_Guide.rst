@@ -560,19 +560,19 @@ Edit the /etc/nova/nova.conf file and add these lines to the [DEFAULT] section::
 
 * 编辑/etc/cinder/cinder.conf::
 
-[DEFAULT]
-rootwrap_config = /etc/cinder/rootwrap.conf
-sql_connection = mysql://cinderUser:cinderPass@10.10.10.51/cinder
-api_paste_confg = /etc/cinder/api-paste.ini
-iscsi_helper = ietadm
-volume_name_template = volume-%s
-volume_group = cinder-volumes
-verbose = True
-auth_strategy = keystone
-iscsi_ip_address=10.10.10.51
-state_path = /var/lib/cinder
-volumes_dir = /var/lib/cinder/volumes
-rpc_backend = cinder.openstack.common.rpc.impl_kombu
+    [DEFAULT]
+    rootwrap_config = /etc/cinder/rootwrap.conf
+    sql_connection = mysql://cinderUser:cinderPass@10.10.10.51/cinder
+    api_paste_confg = /etc/cinder/api-paste.ini
+    iscsi_helper = ietadm
+    volume_name_template = volume-%s
+    volume_group = cinder-volumes
+    verbose = True
+    auth_strategy = keystone
+    iscsi_ip_address=10.10.10.51
+    state_path = /var/lib/cinder
+    volumes_dir = /var/lib/cinder/volumes
+    rpc_backend = cinder.openstack.common.rpc.impl_kombu
 
 
 * 接下来同步数据库::
